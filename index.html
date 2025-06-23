@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Home Dashboard | 6-LED Control</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-database-compat.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <canvas id="modern-canvas"></canvas>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-logo">
+            <div class="logo-icon">
+                <i class="fas fa-home"></i>
+            </div>
+            <div class="logo-text">SMART HOME</div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress" id="loadingProgress"></div>
+        </div>
+    </div>
+    <div class="notification-container" id="notificationContainer"></div>
+    <div class="overlay" id="overlay"></div>
+    <div class="voice-assistant">
+        <div class="voice-commands" id="voiceCommands">
+            <h3><i class="fas fa-microphone-alt"></i> Voice Commands</h3>
+            <ul>
+                <li><i class="fas fa-chevron-right"></i> "Turn on all lights"</li>
+                <li><i class="fas fa-chevron-right"></i> "Turn off all lights"</li>
+                <li><i class="fas fa-chevron-right"></i> "Turn on living room light"</li>
+                <li><i class="fas fa-chevron-right"></i> "Turn off kitchen light"</li>
+                <li><i class="fas fa-chevron-right"></i> "Switch to dark mode"</li>
+                <li><i class="fas fa-chevron-right"></i> "Switch to light mode"</li>
+                <li><i class="fas fa-chevron-right"></i> "Show commands"</li>
+            </ul>
+        </div>
+        <div class="voice-response" id="voiceResponse">
+            <p><i class="fas fa-robot"></i> <span id="responseText">Listening...</span></p>
+        </div>
+        <div class="voice-btn" id="voiceBtn">
+            <i class="fas fa-microphone"></i>
+        </div>
+    </div>
+    <div class="container">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-close" id="sidebarClose">
+                <i class="fas fa-times"></i>
+            </div>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <div class="logo-text">SMART HOME</div>
+            </div>
+            <div class="nav-item active">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-lightbulb"></i>
+                <span>Lights</span>
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-thermometer-half"></i>
+                <span>Thermostat</span>
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-shield-alt"></i>
+                <span>Security</span>
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-plug"></i>
+                <span>Appliances</span>
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Energy Usage</span>
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="top-left">
+                    <div class="menu-btn" id="menuBtn">
+                        <i class="fas fa-bars"></i>
+                    </div>
+                    <h1 class="page-title">Light Control Panel</h1>
+                </div>
+                <div class="user-controls">
+                    <div class="theme-toggle" id="themeToggle">
+                        <i class="fas fa-moon" id="themeIcon"></i>
+                    </div>
+                    <div class="notification-btn">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="voice-btn" id="topVoiceBtn">
+                        <i class="fas fa-microphone"></i>
+                    </div>
+                    <div class="user-btn">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bulk-controls">
+                <button class="bulk-btn on" id="allOnBtn">
+                    <i class="fas fa-power-off"></i>
+                    Turn All On
+                </button>
+                <button class="bulk-btn off" id="allOffBtn">
+                    <i class="fas fa-power-off"></i>
+                    Turn All Off
+                </button>
+            </div>
+            <div class="devices-grid">
+                <!-- LED Cards -->
+                <!-- LED 1 -->
+                <div class="device-card">
+                    <div class="device-header">
+                        <div class="device-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <div class="device-status" id="led1Status">ON</div>
+                    </div>
+                    <h3 class="device-name">Living Room Light</h3>
+                    <div class="device-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Main Area</span>
+                    </div>
+                    <div class="toggle-container">
+                        <span>Power Control</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="led1Toggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <!-- LED 2 -->
+                <div class="device-card">
+                    <div class="device-header">
+                        <div class="device-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <div class="device-status off" id="led2Status">OFF</div>
+                    </div>
+                    <h3 class="device-name">Kitchen Light</h3>
+                    <div class="device-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Cooking Area</span>
+                    </div>
+                    <div class="toggle-container">
+                        <span>Power Control</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="led2Toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <!-- LED 3 -->
+                <div class="device-card">
+                    <div class="device-header">
+                        <div class="device-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <div class="device-status" id="led3Status">ON</div>
+                    </div>
+                    <h3 class="device-name">Bedroom Light</h3>
+                    <div class="device-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Master Bedroom</span>
+                    </div>
+                    <div class="toggle-container">
+                        <span>Power Control</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="led3Toggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <!-- LED 4 -->
+                <div class="device-card">
+                    <div class="device-header">
+                        <div class="device-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <div class="device-status off" id="led4Status">OFF</div>
+                    </div>
+                    <h3 class="device-name">Bathroom Light</h3>
+                    <div class="device-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Guest Bathroom</span>
+                    </div>
+                    <div class="toggle-container">
+                        <span>Power Control</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="led4Toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <!-- LED 5 -->
+                <div class="device-card">
+                    <div class="device-header">
+                        <div class="device-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <div class="device-status off" id="led5Status">OFF</div>
+                    </div>
+                    <h3 class="device-name">Garage Light</h3>
+                    <div class="device-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Garage</span>
+                    </div>
+                    <div class="toggle-container">
+                        <span>Power Control</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="led5Toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <!-- LED 6 -->
+                <div class="device-card">
+                    <div class="device-header">
+                        <div class="device-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <div class="device-status off" id="led6Status">OFF</div>
+                    </div>
+                    <h3 class="device-name">Garden Light</h3>
+                    <div class="device-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Backyard</span>
+                    </div>
+                    <div class="toggle-container">
+                        <span>Power Control</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="led6Toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="stats-section">
+                <div class="stats-card">
+                    <div class="stats-header">
+                        <div class="stats-title">Energy Consumption</div>
+                        <i class="fas fa-bolt" style="color: var(--neon-green);"></i>
+                    </div>
+                    <div class="stats-value">5.4 kW</div>
+                    <div class="stats-footer">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>8% less than yesterday</span>
+                    </div>
+                </div>
+                <div class="stats-card">
+                    <div class="stats-header">
+                        <div class="stats-title">Active Devices</div>
+                        <i class="fas fa-plug" style="color: var(--electric-blue);"></i>
+                    </div>
+                    <div class="stats-value">2/6</div>
+                    <div class="stats-footer">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>1 more than yesterday</span>
+                    </div>
+                </div>
+                <div class="stats-card">
+                    <div class="stats-header">
+                        <div class="stats-title">Monthly Savings</div>
+                        <i class="fas fa-coins" style="color: var(--neon-green);"></i>
+                    </div>
+                    <div class="stats-value">$28.50</div>
+                    <div class="stats-footer">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>12% more than last month</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
